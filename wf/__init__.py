@@ -10,6 +10,7 @@ from latch import small_task, workflow
 from typing import List
 from time import sleep
 from Bio import SeqIO
+import os
 
 
 @small_task
@@ -34,17 +35,20 @@ def read_fasta_files(
 @small_task
 def interproscan_task(
     email_addr: str, 
-    fasta_files: List[LatchFile],
+    # fasta_files: List[LatchFile],
     output_dir: LatchDir,
     goterms: bool,
     pathways: bool,
 ) -> LatchFile:
     # output_dir = Path(f"/root/result_InterProScan/")
     # LatchDir(str(output_dir), f"latch://{output_dir}")
-    
+    os.environ["EMAIL"] = email_addr
+    os.environ["OUTDIR"] = str(output_dir)
     test = Path(f"/root/iprscan_test.txt")
+    
     with open(test, "w") as f:
-        subprocess.run(["python", "iprscan5_urllib3.py", "--help"], stdout=f, stderr=f)
+        subprocess.run(["bash", "iprscan.sh"], stdout=f, stderr=f)
+    
     return LatchFile(str(test), f"latch://{test}")
 
 
@@ -106,10 +110,10 @@ def interproscan(
             display_name: Include Pathways
 
     """
-    fasta_files = read_fasta_files(fasta_dir=fasta_dir)
+    # fasta_files = read_fasta_files(fasta_dir=fasta_dir)
     return interproscan_task(
         email_addr=email_addr, 
-        fasta_files=fasta_files,
+        # fasta_files=fasta_files,
         output_dir=output_dir,
         goterms=goterms,
         pathways=pathways,
