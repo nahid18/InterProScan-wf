@@ -368,9 +368,9 @@ elif options.email and not options.jobid:
     
     # Submit the job
     jobid = serviceRun(options.email, options.title, params)
-    # if options.async: # Async mode
-    #     print (jobid)
-    # else: # Sync mode
+    if options.async: # Async mode
+        print (jobid)
+    else: # Sync mode
     print (jobid, file=sys.stderr)
     time.sleep(5)
     getResult(jobid)

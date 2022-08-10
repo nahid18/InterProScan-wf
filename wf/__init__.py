@@ -38,9 +38,9 @@ def interproscan_task(
     output_dir: LatchDir,
     goterms: bool,
     pathways: bool,
-) -> LatchFile:
-    # sam_file = Path("covid_assembly.sam").resolve()
-    return LatchFile(str(sam_file), "latch:///covid_assembly.sam")
+) -> LatchDir:
+    output_dir = Path(f"/root/result_InterProScan/")
+    return LatchDir(str(output_dir), f"latch://{output_dir}")
 
 
 @workflow
@@ -50,7 +50,7 @@ def interproscan(
     output_dir: LatchDir,
     goterms: bool = False,
     pathways: bool = False,
-) -> LatchFile:
+) -> LatchDir:
     """Run InterProScan on multiple sequences
 
     InterProScan
