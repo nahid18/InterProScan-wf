@@ -38,9 +38,14 @@ def interproscan_task(
     output_dir: LatchDir,
     goterms: bool,
     pathways: bool,
-) -> LatchDir:
-    output_dir = Path(f"/root/result_InterProScan/")
-    return LatchDir(str(output_dir), f"latch://{output_dir}")
+) -> LatchFile:
+    # output_dir = Path(f"/root/result_InterProScan/")
+    # LatchDir(str(output_dir), f"latch://{output_dir}")
+    
+    test = Path(f"/root/iprscan_test.txt")
+    with open(test, "w") as f:
+        subprocess.run(["python", "iprscan5_urllib3.py", "--help"], stdout=f, stderr=f)
+    return LatchFile(str(test), f"latch://{test}")
 
 
 @workflow
@@ -50,7 +55,7 @@ def interproscan(
     output_dir: LatchDir,
     goterms: bool = False,
     pathways: bool = False,
-) -> LatchDir:
+) -> LatchFile:
     """Run InterProScan on multiple sequences
 
     InterProScan
