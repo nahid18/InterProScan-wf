@@ -271,6 +271,12 @@ def interproscan_task(
             filename = "".join([x if x.isalnum() else "_" for x in description])
             filepath = f"{out_dir}/{filename}"
             
+            result_info = {
+                'description': description,
+                'job_id': jobid,
+                'filename': f"{filename}.tsv.tsv"
+            }
+            
             message("info", {"title": f"Sequence - {description}", "body": result_info})
             getResult(jobId=jobid, outfile=filepath, outformat="tsv")
             
