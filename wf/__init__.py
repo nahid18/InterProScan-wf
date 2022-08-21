@@ -222,9 +222,9 @@ def interproscan_task(
     
     # Start main
     assert is_fasta(local_path=input_file.local_path) == True
-    CHUNK_SIZE = 10
+    CHUNK_SIZE = 30
     
-    out_dir = 'InterProScan'
+    out_dir = 'InterProScan_Results'
     os.system(command=f"mkdir -p {out_dir}")
     
     job_ids = []
@@ -243,24 +243,14 @@ def interproscan_task(
                 params['pathways'] = True
                 
                 filename = "".join([x if x.isalnum() else "_" for x in record.description])
-                filepath = f"{out_dir}/{filename}"
                 
                 job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 
-                info = {
-                    'description': record.description,
-                    'job_id': job_id,
-                    'filename': f"{filename}.tsv.tsv"
-                }
-                
+                info = { 'description': record.description, 'job_id': job_id }
                 job_ids.append(info)
-                message("info", {"title": f"Sequence - {record.description}", "body": info})
                 
+                message("info", {"title": f"Sequence: {record.description}", "body": info})
                 
-
-    with open(f"{out_dir}/job_ids.json", "w") as handle:
-        json.dump(job_ids, handle)
-        
     message("info", {"title": f"GETTING RESULTS", "body": f""})
         
     while len(os.listdir(out_dir)) % CHUNK_SIZE != 0 or len(os.listdir(out_dir)) == 0:
@@ -284,15 +274,14 @@ def interproscan_task(
         if len(os.listdir(out_dir)) == len(job_ids)+1:
             break
         
-        
-        
-    return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan/')
+    return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan_Results/')
+
 
 @workflow
 def interproscan(
     email_addr: str, 
     input_file: LatchFile,
-    output_dir: str="InterProScan",
+    output_dir: str="InterProScan_Results",
 ) -> LatchDir:
     """Run InterProScan on multiple sequences
 
