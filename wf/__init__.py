@@ -230,33 +230,38 @@ def interproscan_task(
         for batch in batches:
             batch_num += 1
             message("info", {"title": f"SUBMITTING JOBS", "body": f"Batch {batch_num}"})
-            for record in batch:
+            for index, record in enumerate(batch):
                 params = {}
                 params['sequence'] = str(record.seq.ungap("-"))
                 params['goterms'] = False
                 params['pathways'] = False
+                
                 job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 info = { 'description': record.description, 'job_id': job_id }
                 job_ids.append(info)
-                message("info", {"title": f"Batch {batch_num} sequence: {record.description}", "body": info})
                 
+                message("info", {"title": f"B1{batch_num} Sequence {index+1+(batch_num*CHUNK_SIZE)}: {record.description}", "body": info})
+            
             message("info", {"title": f"GETTING RESULTS", "body": f"Batch {batch_num}"})
             curr_file_count = len(os.listdir(out_dir))
             
             while curr_file_count < len(job_ids):
                 selected = job_ids[curr_file_count:]
-                for job in selected:
+                for index, job in enumerate(selected):
                     jobid = job['job_id']
                     description = job['description']
+                    
                     filename = "".join([x if x.isalnum() else "_" for x in description])
-                    filepath = f"{out_dir}/{filename}"
+                    filepath = f"{out_dir}/{filename}"                    
+                    getResult(jobId=jobid, outfile=filepath, outformat="tsv")
+                    
                     result_info = {
                         'description': description,
                         'job_id': jobid,
                         'filename': f"{filename}.tsv.tsv"
                     }
-                    message("info", {"title": f"Batch {batch_num} result: {description}", "body": result_info})
-                    getResult(jobId=jobid, outfile=filepath, outformat="tsv")
+                    message("info", {"title": f"B{batch_num} Result {index+1+(batch_num*CHUNK_SIZE)}: {description}", "body": result_info})
+                
                 if len(os.listdir(out_dir)) == len(job_ids):
                     break
         
