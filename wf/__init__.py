@@ -2,23 +2,17 @@
 Run InterProScan on multiple sequences
 """
 
-import subprocess
-from pathlib import Path
-
-from latch.types import LatchFile, LatchDir, file_glob
 from latch import small_task, workflow, message
-from typing import List
+from latch.types import LatchFile, LatchDir
+from optparse import OptionParser
+from xmltramp2 import xmltramp
+from datetime import datetime
 from Bio import SeqIO
-
-import os
-import sys
-import time
-import json
 import requests
 import platform
-from datetime import datetime
-from xmltramp2 import xmltramp
-from optparse import OptionParser
+import time
+import json
+import os
 
 try:
     from urllib.parse import urlparse, urlencode
@@ -207,13 +201,6 @@ def interproscan_task(
             fasta = SeqIO.parse(handle, "fasta")
             return any(fasta)
 
-    # Get remove output directory from remote path
-    def remote_output_dir(remote_path: str) -> str:
-        assert remote_path is not None
-        if remote_path[-1] != "/":
-            remote_path += "/"
-        return remote_path
-    
     # Create batches of 30 sequences
     def batch(iterable, n=1):
         l = len(iterable)
@@ -241,20 +228,16 @@ def interproscan_task(
         fasta = SeqIO.parse(fh, "fasta")
         batches = batch(list(fasta), CHUNK_SIZE)
         
-        message("info", {"title": f"SUBMITTING JOBS", "body": f""})
-        
         for batch in batches:
+            message("info", {"title": f"SUBMITTING JOBS", "body": f""})
             for record in batch:
                 params = {}
                 params['sequence'] = str(record.seq.ungap("-"))
                 params['goterms'] = False
                 params['pathways'] = False
-                
                 job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
-                
                 info = { 'description': record.description, 'job_id': job_id }
                 job_ids.append(info)
-                
                 message("info", {"title": f"Sequence: {record.description}", "body": info})
                 
             message("info", {"title": f"GETTING RESULTS", "body": f""})
