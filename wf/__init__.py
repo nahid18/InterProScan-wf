@@ -280,8 +280,8 @@ def interproscan_task(
             message("info", {"title": f"Sequence - {description}", "body": result_info})
             getResult(jobId=jobid, outfile=filepath, outformat="tsv")
             
-        # break if out_dir has equal number of files as job_ids
-        if len(os.listdir(out_dir)) == len(job_ids):
+        # break if out_dir files 1 more file (job_id.json) than job_ids
+        if len(os.listdir(out_dir)) == len(job_ids)+1:
             break
         
         
