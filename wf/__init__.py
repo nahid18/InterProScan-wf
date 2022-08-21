@@ -143,7 +143,6 @@ def interproscan_task(
     def serviceGetResult(jobId, type_):
         requestUrl = baseUrl + u'/result/' + jobId + u'/' + type_
         result = restRequest(requestUrl)
-        printDebugMessage(u'serviceGetResult', u'End', 1)
         return result
 
     # Client-side poll
@@ -222,7 +221,7 @@ def interproscan_task(
     
     # Start main
     assert is_fasta(local_path=input_file.local_path) == True
-    CHUNK_SIZE = 3
+    CHUNK_SIZE = 10
     
     out_dir = 'InterProScan'
     os.system(command=f"mkdir -p {out_dir}")
@@ -248,7 +247,9 @@ def interproscan_task(
             
             while len(os.listdir(out_dir)) % CHUNK_SIZE != 0:
                 time.sleep(1)
-                if len(os.listdir(out_dir)) % CHUNK_SIZE == 0:
+                current_count = len(os.listdir(out_dir)) % CHUNK_SIZE
+                total_count = len(list(fasta))
+                if current_count == 0 or current_count == total_count:
                     break
 
     return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan/')
