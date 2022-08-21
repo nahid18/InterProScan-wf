@@ -217,19 +217,19 @@ def interproscan_task(
     # Start main
     assert is_fasta(local_path=input_file.local_path) == True
     CHUNK_SIZE = 30
+    job_ids = []
+    batch_num = 0
     
     curr_timestamp = "".join([x if x.isalnum() else "_" for x in get_timestamp()])
     out_dir = f"InterPro_{curr_timestamp}"
     os.system(command=f"mkdir -p {out_dir}")
-    
-    job_ids = []
 
     with open(input_file.local_path, "r") as fh:
         fasta = SeqIO.parse(fh, "fasta")
         batches = batch(list(fasta), CHUNK_SIZE)
-        
         for batch in batches:
-            message("info", {"title": f"SUBMITTING JOBS", "body": f""})
+            batch_num += 1
+            message("info", {"title": f"SUBMITTING JOBS", "body": f"Batch {batch_num}"})
             for record in batch:
                 params = {}
                 params['sequence'] = str(record.seq.ungap("-"))
@@ -238,27 +238,25 @@ def interproscan_task(
                 job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 info = { 'description': record.description, 'job_id': job_id }
                 job_ids.append(info)
-                message("info", {"title": f"Sequence: {record.description}", "body": info})
+                message("info", {"title": f"Batch {batch_num} sequence: {record.description}", "body": info})
                 
-            message("info", {"title": f"GETTING RESULTS", "body": f""})
-                
-            while len(os.listdir(out_dir)) % CHUNK_SIZE != 0 or len(os.listdir(out_dir)) == 0:
-                for job in job_ids:
+            message("info", {"title": f"GETTING RESULTS", "body": f"Batch {batch_num}"})
+            curr_file_count = len(os.listdir(out_dir))
+            
+            while curr_file_count < len(job_ids):
+                selected = job_ids[curr_file_count:]
+                for job in selected:
                     jobid = job['job_id']
                     description = job['description']
-                    
                     filename = "".join([x if x.isalnum() else "_" for x in description])
                     filepath = f"{out_dir}/{filename}"
-                    
                     result_info = {
                         'description': description,
                         'job_id': jobid,
                         'filename': f"{filename}.tsv.tsv"
                     }
-                    
-                    message("info", {"title": f"Result: {description}", "body": result_info})
+                    message("info", {"title": f"Batch {batch_num} result: {description}", "body": result_info})
                     getResult(jobId=jobid, outfile=filepath, outformat="tsv")
-                    
                 if len(os.listdir(out_dir)) == len(job_ids):
                     break
         
