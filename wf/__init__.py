@@ -242,8 +242,6 @@ def interproscan_task(
                 params['goterms'] = False
                 params['pathways'] = False
                 
-                filename = "".join([x if x.isalnum() else "_" for x in record.description])
-                
                 job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 
                 info = { 'description': record.description, 'job_id': job_id }
