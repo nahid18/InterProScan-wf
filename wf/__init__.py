@@ -247,8 +247,6 @@ def interproscan_task(
                 
                 job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 
-                message("info", {"title": f"Sequence - {record.description}", "body": f"Job ID - {job_id}"})
-                
                 info = {
                     'description': record.description,
                     'job_id': job_id,
@@ -256,6 +254,7 @@ def interproscan_task(
                 }
                 
                 job_ids.append(info)
+                message("info", {"title": f"Sequence - {record.description}", "body": info})
                 
                 
 
@@ -271,10 +270,16 @@ def interproscan_task(
             
             filename = "".join([x if x.isalnum() else "_" for x in description])
             filepath = f"{out_dir}/{filename}"
-
-            message("info", {"title": f"Sequence - {description}", "body": f"Job ID - {jobid}"})
             
             getResult(jobId=jobid, outfile=filepath, outformat="tsv")
+            
+            result_info = {
+                'description': description,
+                'job_id': jobid,
+                'filename': f"{filename}.tsv.tsv"
+            }
+            
+            message("info", {"title": f"Sequence - {description}", "body": result_info})
             
         current_count = len(os.listdir(out_dir))
         divise = current_count % CHUNK_SIZE
