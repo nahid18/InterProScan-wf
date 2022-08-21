@@ -16,6 +16,7 @@ import time
 import json
 import requests
 import platform
+from datetime import datetime
 from xmltramp2 import xmltramp
 from optparse import OptionParser
 
@@ -218,13 +219,20 @@ def interproscan_task(
         l = len(iterable)
         for ndx in range(0, l, n):
             yield iterable[ndx:min(ndx + n, l)]
+    
+    # Get timestamp        
+    def get_timestamp():
+        format_str = "%d %b %Y %H:%M:%S %p"
+        result = datetime.now().strftime(format_str)
+        return result
 
     
     # Start main
     assert is_fasta(local_path=input_file.local_path) == True
     CHUNK_SIZE = 30
     
-    out_dir = 'InterProScan_Results'
+    time = "".join([x if x.isalnum() else "_" for x in get_timestamp()])
+    out_dir = f"InterPro_{time}"
     os.system(command=f"mkdir -p {out_dir}")
     
     job_ids = []
@@ -271,14 +279,13 @@ def interproscan_task(
                 if len(os.listdir(out_dir)) == len(job_ids):
                     break
         
-    return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan_Results/')
+    return LatchDir(path=str(out_dir), remote_path=f"latch:///{out_dir}/")
 
 
 @workflow
 def interproscan(
     email_addr: str, 
     input_file: LatchFile,
-    output_dir: str="InterProScan_Results",
 ) -> LatchDir:
     """Run InterProScan on multiple sequences
 
@@ -310,12 +317,6 @@ def interproscan(
 
           __metadata__:
             display_name: Input Fasta (All Protein Sequences)
-
-        output_dir:
-           Output Directory of InterProScan Results
-
-          __metadata__:
-            display_name: Output Directory
     """
     return interproscan_task(
         email_addr=email_addr, 
