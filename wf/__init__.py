@@ -271,23 +271,13 @@ def interproscan_task(
             filename = "".join([x if x.isalnum() else "_" for x in description])
             filepath = f"{out_dir}/{filename}"
             
+            message("info", {"title": f"Sequence - {description}", "body": result_info})
             getResult(jobId=jobid, outfile=filepath, outformat="tsv")
             
-            result_info = {
-                'description': description,
-                'job_id': jobid,
-                'filename': f"{filename}.tsv.tsv"
-            }
-            
-            message("info", {"title": f"Sequence - {description}", "body": result_info})
-            
-        current_count = len(os.listdir(out_dir))
-        divise = current_count % CHUNK_SIZE
-        total_count = len(job_ids)
-        time.sleep(1)
-        
-        if current_count == total_count:
+        # break if out_dir has equal number of files as job_ids
+        if len(os.listdir(out_dir)) == len(job_ids):
             break
+        
         
         
     return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan/')
