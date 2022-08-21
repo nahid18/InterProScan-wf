@@ -266,31 +266,19 @@ def interproscan_task(
             fasta = SeqIO.parse(handle, "fasta")
             return any(fasta)
 
-    # def remote_file(output: LatchDir, name: str) -> str:
-    #     remote_path = output.remote_path
-    #     assert remote_path is not None
-    #     if remote_path[-1] != "/":
-    #         remote_path += "/"
-    #     return (remote_path + name)
-    
     def remote_output_dir(remote_path: str) -> str:
         assert remote_path is not None
         if remote_path[-1] != "/":
             remote_path += "/"
         return remote_path
 
-    # os.environ["EMAIL"] = email_addr
-    # os.environ["INDIR"] = str(input_dir.local_path)
-    # os.environ["OUTDIR"] = str(output_dir.local_path)
     
     assert is_fasta(local_path=input_file.local_path) == True
     
     file_name = "inter_out.txt"
-    out_file = Path(f"/root/{file_name}")
+    out_file = str(Path(file_name))
     remote_file = f"{remote_output_dir(remote_path=output_dir.remote_path)}{file_name}"
     
-    # local_input_dir = Path(input_dir).resolve()
-    # local_output_dir = Path(output_dir).resolve()
     
     with open(out_file, "w") as handle:
         with open(input_file.local_path, "r") as fh:
@@ -298,7 +286,7 @@ def interproscan_task(
             for record in fasta:
                 handle.write(f">{record.id}\n")
 
-    return LatchFile(path=str(out_file), remote_path=remote_file)
+    return LatchFile(path=out_file, remote_path=remote_file)
 
 @workflow
 def interproscan(
