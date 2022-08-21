@@ -239,8 +239,8 @@ def interproscan_task(
             for record in batch:
                 params = {}
                 params['sequence'] = str(record.seq.ungap("-"))
-                params['goterms'] = True
-                params['pathways'] = True
+                params['goterms'] = False
+                params['pathways'] = False
                 
                 filename = "".join([x if x.isalnum() else "_" for x in record.description])
                 
@@ -251,27 +251,27 @@ def interproscan_task(
                 
                 message("info", {"title": f"Sequence: {record.description}", "body": info})
                 
-    message("info", {"title": f"GETTING RESULTS", "body": f""})
-        
-    while len(os.listdir(out_dir)) % CHUNK_SIZE != 0 or len(os.listdir(out_dir)) == 0:
-        for job in job_ids:
-            jobid = job['job_id']
-            description = job['description']
-            
-            filename = "".join([x if x.isalnum() else "_" for x in description])
-            filepath = f"{out_dir}/{filename}"
-            
-            result_info = {
-                'description': description,
-                'job_id': jobid,
-                'filename': f"{filename}.tsv.tsv"
-            }
-            
-            message("info", {"title": f"Sequence - {description}", "body": result_info})
-            getResult(jobId=jobid, outfile=filepath, outformat="tsv")
-            
-        if len(os.listdir(out_dir)) == len(job_ids):
-            break
+            message("info", {"title": f"GETTING RESULTS", "body": f""})
+                
+            while len(os.listdir(out_dir)) % CHUNK_SIZE != 0 or len(os.listdir(out_dir)) == 0:
+                for job in job_ids:
+                    jobid = job['job_id']
+                    description = job['description']
+                    
+                    filename = "".join([x if x.isalnum() else "_" for x in description])
+                    filepath = f"{out_dir}/{filename}"
+                    
+                    result_info = {
+                        'description': description,
+                        'job_id': jobid,
+                        'filename': f"{filename}.tsv.tsv"
+                    }
+                    
+                    message("info", {"title": f"Result: {description}", "body": result_info})
+                    getResult(jobId=jobid, outfile=filepath, outformat="tsv")
+                    
+                if len(os.listdir(out_dir)) == len(job_ids):
+                    break
         
     return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan_Results/')
 
