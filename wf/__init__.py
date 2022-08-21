@@ -228,12 +228,14 @@ def interproscan_task(
     
     # Start main
     assert is_fasta(local_path=input_file.local_path) == True
+    CHUNK_SIZE = 3
+    
     out_dir = 'InterProScan'
     os.system(command=f"mkdir -p {out_dir}")
 
     with open(input_file.local_path, "r") as fh:
         fasta = SeqIO.parse(fh, "fasta")
-        batches = batch(list(fasta), 30)
+        batches = batch(list(fasta), CHUNK_SIZE)
         for batch in batches:
             for record in batch:
                 params = {}
@@ -242,15 +244,18 @@ def interproscan_task(
                 params['pathways'] = True
                 
                 filename = "".join([x if x.isalnum() else "_" for x in record.description])
+                filepath = f"{out_dir}/{filename}.tsv"
                 
-                with open(f"{out_dir}/{filename}.fasta", "w") as handle:
-                    SeqIO.write(record, handle, "fasta")
-                    
-                # jobid = serviceRun(email=str(email_addr), title=str(record.description), params=params)
-                # time.sleep(5)
-                # getResult(jobid=jobid, outfile=remote_file, outformat="tsv")
+                jobid = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 
-            time.sleep(10)
+                time.sleep(5)
+                
+                getResult(jobid=jobid, outfile=filepath, outformat="tsv")
+            
+            while len(os.listdir(out_dir)) % CHUNK_SIZE != 0:
+                time.sleep(1)
+                if len(os.listdir(out_dir)) % CHUNK_SIZE == 0:
+                    break
 
     return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan/')
 
