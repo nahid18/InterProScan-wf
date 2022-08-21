@@ -250,7 +250,7 @@ def interproscan_task(
                 
                 time.sleep(5)
                 
-                getResult(jobid=jobid, outfile=filepath, outformat="tsv")
+                getResult(jobId=jobid, outfile=filepath, outformat="tsv")
             
             while len(os.listdir(out_dir)) % CHUNK_SIZE != 0:
                 time.sleep(1)
