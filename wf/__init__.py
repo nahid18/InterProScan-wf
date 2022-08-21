@@ -151,8 +151,6 @@ def interproscan_task(
         result = u'PENDING'
         while result == u'RUNNING' or result == u'PENDING':
             result = serviceGetStatus(jobId)
-            if outputLevel > 0:
-                print(result)
             if result == u'RUNNING' or result == u'PENDING':
                 time.sleep(pollFreq)
 
@@ -182,8 +180,6 @@ def interproscan_task(
                     outformat_type = None
 
                 if not outformat_type or outformat_type == unicode(resultType[u'identifier']):
-                    if outputLevel > 1:
-                        print("Getting %s" % unicode(resultType[u'identifier']))
                     # Get the result
                     result = serviceGetResult(jobId, unicode(resultType[u'identifier']))
                     if (unicode(resultType[u'mediaType']) == u"image/png"
@@ -202,8 +198,6 @@ def interproscan_task(
                         fh = open(filename, "wb")
                         fh.write(result)
                         fh.close()
-                    if outputLevel > 0:
-                        print("Creating result file: " + filename)
 
 
     # Check if fasta file is valid
