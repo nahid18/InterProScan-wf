@@ -270,8 +270,7 @@ def interproscan_task(
             message("info", {"title": f"Sequence - {description}", "body": result_info})
             getResult(jobId=jobid, outfile=filepath, outformat="tsv")
             
-        # break if out_dir files 1 more file (job_id.json) than job_ids
-        if len(os.listdir(out_dir)) == len(job_ids)+1:
+        if len(os.listdir(out_dir)) == len(job_ids):
             break
         
     return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan_Results/')
