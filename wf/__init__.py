@@ -231,8 +231,8 @@ def interproscan_task(
     assert is_fasta(local_path=input_file.local_path) == True
     CHUNK_SIZE = 30
     
-    time = "".join([x if x.isalnum() else "_" for x in get_timestamp()])
-    out_dir = f"InterPro_{time}"
+    curr_timestamp = "".join([x if x.isalnum() else "_" for x in get_timestamp()])
+    out_dir = f"InterPro_{curr_timestamp}"
     os.system(command=f"mkdir -p {out_dir}")
     
     job_ids = []
