@@ -6,13 +6,14 @@ import subprocess
 from pathlib import Path
 
 from latch.types import LatchFile, LatchDir, file_glob
-from latch import small_task, workflow
+from latch import small_task, workflow, message
 from typing import List
 from Bio import SeqIO
 
 import os
 import sys
 import time
+import json
 import requests
 import platform
 from xmltramp2 import xmltramp
@@ -225,33 +226,60 @@ def interproscan_task(
     
     out_dir = 'InterProScan'
     os.system(command=f"mkdir -p {out_dir}")
+    
+    job_ids = []
 
     with open(input_file.local_path, "r") as fh:
         fasta = SeqIO.parse(fh, "fasta")
         batches = batch(list(fasta), CHUNK_SIZE)
+        message("info", "SUBMITTING JOBS")
         for batch in batches:
             for record in batch:
                 params = {}
-                params['sequence'] = str(record.seq)
+                params['sequence'] = str(record.seq.ungap("-"))
                 params['goterms'] = True
                 params['pathways'] = True
                 
                 filename = "".join([x if x.isalnum() else "_" for x in record.description])
-                filepath = f"{out_dir}/{filename}.tsv"
+                filepath = f"{out_dir}/{filename}"
                 
-                jobid = serviceRun(email=str(email_addr), title=str(record.description), params=params)
+                job_id = serviceRun(email=str(email_addr), title=str(record.description), params=params)
                 
-                time.sleep(5)
+                info = {
+                    'description': record.description,
+                    'job_id': job_id,
+                    'filename': f"{filename}.tsv.tsv"
+                }
                 
-                getResult(jobId=jobid, outfile=filepath, outformat="tsv")
-            
-            while len(os.listdir(out_dir)) % CHUNK_SIZE != 0:
-                time.sleep(1)
-                current_count = len(os.listdir(out_dir)) % CHUNK_SIZE
-                total_count = len(list(fasta))
-                if current_count == 0 or current_count == total_count:
-                    break
+                job_ids.append(info)
+                message("info", info)
+                
 
+    with open(f"{out_dir}/job_ids.json", "w") as handle:
+        json.dump(job_ids, handle)
+        
+    message("info", "GETTING RESULTS")
+        
+    while len(os.listdir(out_dir)) % CHUNK_SIZE != 0 or len(os.listdir(out_dir)) == 0:
+        for job in job_ids:
+            jobid = job['job_id']
+            description = job['description']
+            
+            filename = "".join([x if x.isalnum() else "_" for x in description])
+            filepath = f"{out_dir}/{filename}"
+            
+            message("info", f"{description} - {jobid}")
+            getResult(jobId=jobid, outfile=filepath, outformat="tsv")
+            
+        current_count = len(os.listdir(out_dir))
+        divise = current_count % CHUNK_SIZE
+        total_count = len(job_ids)
+        time.sleep(1)
+        
+        if current_count == total_count:
+            break
+        
+        
     return LatchDir(path=str(out_dir), remote_path='latch:///InterProScan/')
 
 @workflow
