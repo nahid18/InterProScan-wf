@@ -7,7 +7,7 @@ To classify proteins in this way, InterProScan uses predictive models, known as 
 It combines protein signatures from these member databases into a single searchable resource, capitalising on their individual strengths to produce a powerful integrated database and diagnostic tool.
 
 ## How to Access
-Click Here: [https://console.latch.bio/explore/67031/info](https://console.latch.bio/explore/67031/info)
+Click Here: [console.latch.bio/explore/67031/info](https://console.latch.bio/explore/67031/info)
 
 ## Requirements to Run
 1. Your Email Address
